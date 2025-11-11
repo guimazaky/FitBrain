@@ -1,5 +1,6 @@
-import { GalleryVerticalEnd } from "lucide-react"
+"use client"
 
+import {Eye, EyeOff, GalleryVerticalEnd} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,15 +11,56 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import {useState} from "react";
+import {signUp} from "@/lib/actions/auth-actions";
+import {redirect} from "next/navigation";
+import { useRouter } from "next/navigation";
+
+
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("As senhas não coincidem");
+      return;
+    }
+
+    try {
+      const result = await signUp(email, password, name);
+      if (!result.user) {
+        setError("Erro ao criar conta");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError(String(err));
+    }
+  };
+
+
+
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form>
-        <FieldGroup>
+      <form onSubmit={handleSubmit}>
+        <FieldGroup >
           <div className="flex flex-col items-center gap-2 text-center">
             <a
               href="#"
@@ -27,42 +69,73 @@ export function SignupForm({
               <div className="flex size-8 items-center justify-center rounded-md">
                 <GalleryVerticalEnd className="size-6" />
               </div>
-              <span className="sr-only">Acme Inc.</span>
+              <span className="sr-only">FitBrain</span>
             </a>
-            <h1 className="text-xl font-bold">Welcome to Acme Inc.</h1>
+            <h1 className="text-xl font-bold">Bem vindo ao FitBrain</h1>
             <FieldDescription>
-              Already have an account? <a href="/login">Sign in</a>
+              Ja tem uma conta? <a href="/login">Login</a>
             </FieldDescription>
           </div>
-          <Field>
+          <div className="flex flex-col items-center gap-2">
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+          </div>
+          <Field >
             <FieldLabel htmlFor="email">Email</FieldLabel>
             <Input
               id="email"
               type="email"
               placeholder="m@example.com"
               required
+              onChange={(e) => setEmail(e.target.value)}
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="password">Senha</FieldLabel>
+            <FieldLabel htmlFor="name">Nome</FieldLabel>
             <Input
-                id="password"
+                id="name"
+                type="name"
+                placeholder="João Silva"
+                required
+                onChange={(e) => setName(e.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="password" >Senha</FieldLabel>
+
+            <div className="relative">
+              <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Sua senha"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2  hover:text-foreground transition-colors"
+              >
+                {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                ) : (
+                    <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="passwordConfirm">Confirmar Senha</FieldLabel>
+            <Input
+                id="passwordConfirm"
                 type="password"
                 placeholder="********"
                 required
+                onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="password">Confirmar Senha</FieldLabel>
-            <Input
-                id="password"
-                type="password"
-                placeholder="********"
-                required
-            />
-          </Field>
-          <Field>
-            <Button type="submit">Create Account</Button>
+            <Button type="submit" >Criar conta</Button>
           </Field>
           <FieldSeparator>Or</FieldSeparator>
           <Field className="grid gap-4 sm:grid-cols-2">
@@ -73,7 +146,7 @@ export function SignupForm({
                   fill="currentColor"
                 />
               </svg>
-              Continue with Apple
+              Continuar com Apple
             </Button>
             <Button variant="outline" type="button">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -82,14 +155,14 @@ export function SignupForm({
                   fill="currentColor"
                 />
               </svg>
-              Continue with Google
+              Continuar com Google
             </Button>
           </Field>
         </FieldGroup>
       </form>
       <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+        Ao clicar continuar , voce concorda com nossos <a href="#">Termos de Serviços</a>{" "}
+        e <a href="#">Politica de Privacidade</a>.
       </FieldDescription>
     </div>
   )
