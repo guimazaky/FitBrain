@@ -16,6 +16,7 @@ import {useState} from "react";
 import {signIn} from "@/lib/actions/auth-actions";
 import {router} from "next/client";
 import {useRouter} from "next/navigation";
+import SignoutButton from "@/components/signout-button";
 
 
 export function LoginForm({
@@ -131,6 +132,7 @@ export function LoginForm({
         Ao clicar continuar , voce concorda com nossos <a href="#">Termos de Serviços</a>{" "}
         e <a href="#">Politica de Privacidade</a>.
       </FieldDescription>
+      <SignoutButton/>
     </div>
   )
 }
